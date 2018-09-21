@@ -1,0 +1,177 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v3.0 | 20180413
+   License: none (public domain)
+*/
+
+/*sticky footer begin*/
+html,body,#app{
+  height: 100%;
+}
+.main,.el-container{
+	min-height: 100%;
+	
+}
+.main_body{
+  position: relative;
+  padding-bottom: 40px;
+}
+.el-footer{
+  position: absolute;
+  bottom: 0;
+  left:0;
+  height: 40px!important;
+  width: 100%
+}
+
+/*sticky footer end*/
+
+.path{
+	margin-bottom: 20px;
+  padding: 20px 10px;
+	background: #fff;
+	border-bottom: 1px solid #ebeef5
+}
+
+.mr-10{
+	margin-right: 10px;
+}
+
+td,th{
+	text-align: center;
+}
+
+th div{
+	text-align: center;
+}
+
+.notice-form-container .el-form-item__content{
+	margin-left: 0!important
+}
+    
+.newuser-form-box .el-upload-list--picture-card .el-upload-list__item,.banner-form-box .el-upload-list--picture-card .el-upload-list__item{
+	width: 375px;
+}      
+
+.adposition-form-box .el-upload-list--picture-card .el-upload-list__item{
+	width: 355px;
+}
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+main, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, main, menu, nav, section {
+	display: block;
+}
+/* HTML5 hidden-attribute fix for newer browsers */
+*[hidden] {
+    display: none;
+}
+body {
+	line-height: 1;
+	overflow: hidden;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+.el-menu--collapse .el-submenu__title i.el-submenu__icon-arrow{
+	display: none
+}
+.el-menu--collapse{
+  height: 100%
+}
+
+/* scroll */
+
+::-webkit-scrollbar {  /* 滚动条整体部分 */
+        width:8px;
+        margin-right:2px;
+        background-color:#eee
+      }
+::-webkit-scrollbar-button { /* 滚动条两端的按钮 */
+  display: none;
+}
+::-webkit-scrollbar:horizontal {
+  height:10px;
+  margin-bottom:2px
+}
+::-webkit-scrollbar-track {  /* 外层轨道 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track-piece {  /*内层轨道，滚动条中间部分 */
+  background-color: #eee;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {  /* 滑块 */
+  width:10px;
+  border-radius: 5px;
+  background: #CBCBCB;
+}
+::-webkit-scrollbar-corner { /* 边角 */
+  width: 10px;
+  background-color: #fff;
+}
+::-webkit-scrollbar-thumb:hover { /* 鼠标移入滑块 */
+  background: #909090;
+}
+			
+			.filter-box .el-radio-button__inner{
+				  padding: 5px 10px
+			}
+
+			.filter-box .el-select input,.el-input input{
+				height: 26px!important;
+				font-size: 14px
+			}
+			.filter-box .el-select .el-input__icon,.el-input .el-input__icon{
+				line-height: 26px
+			}
+.tag-left .el-form--label-top .el-form-item__label,.tag-edit .el-form--label-top .el-form-item__label{
+  padding: 0;
+  line-height: 30px
+}
+.article_container .form-right .el-form-item .el-form-item__content{
+  margin-left: 30px
+}
+.article_container .form-right .el-form-item__label{
+  line-height: 26px
+}
+.article_container .form-right .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.article_container .form-right .el-upload:hover {
+  border-color: #409EFF;
+}
