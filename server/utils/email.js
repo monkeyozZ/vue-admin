@@ -33,13 +33,6 @@ const verifyClient = () => {
 
 verifyClient()
 
-let mailOptions = {
-  to: '1316438321@qq.com',
-  subject: 'test',
-  text: `来自的回复`
-  /* html: `<p>哈哈哈</p>` */
-}
-
 const sendMail = mailOptions => {
   if (!clientIsValid) {
     console.warn('由于未初始化成功，邮件客户端发送被拒绝')
@@ -54,9 +47,5 @@ const sendMail = mailOptions => {
     }
   })
 }
-setTimeout(() => {
-  sendMail(mailOptions)
-}, 1000)
-exports.sendMail = sendMail
-exports.nodemailer = nodemailer
-exports.transporter = transporter
+
+export default sendMail

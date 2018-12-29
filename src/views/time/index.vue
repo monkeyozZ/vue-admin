@@ -2,8 +2,8 @@
   <div class="article_container">
     <el-breadcrumb class="path" separator-class="el-icon-arrow-right">
       <span style="float:left">当前位置：</span>
-      <el-breadcrumb-item>文章管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/article/index' }">文章列表</el-breadcrumb-item>
+      <el-breadcrumb-item>时间轴管理</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/article/index' }">时间轴列表</el-breadcrumb-item>
     </el-breadcrumb>
     <div class="data-container">
       <el-row class="filter-box">
@@ -14,52 +14,6 @@
           <el-radio-button label="3">草稿箱</el-radio-button>
           <el-radio-button label="4">回收站</el-radio-button>
         </el-radio-group>
-        </el-col>
-        <el-col :xs="8" :sm="10" :md="{span:11}" :lg="{span:12, offset: 4}">
-          <el-row class="cate-filter-box" :gutter="10">
-            <el-col class="hidden-sm-and-down" :md="10" :lg="5">
-              <el-button icon="el-icon-delete" @click="clear">清空筛选条件</el-button>
-            </el-col>
-            <el-col class="hidden-md-and-down"  :md="5" :lg="5">
-              <el-select v-model="filterobj.condition2"
-                filterable
-                placeholder="分类筛选">
-                  <el-option-group
-                    v-for="group in category"
-                    :key="group.label"
-                    :label="group.label">
-                    <el-option
-                      v-for="item in group.options"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-option-group>
-                </el-select>
-            </el-col>
-            <el-col class="hidden-md-and-down"  :md="5" :lg="5">
-              <el-select v-model="filterobj.condition3"
-                filterable
-                placeholder="标签筛选">
-                  <el-option-group
-                    label="所有标签">
-                    <el-option
-                      v-for="(item, index) in tag"
-                      :key="index"
-                      :label="item.name"
-                      :value="item.alias">
-                    </el-option>
-                  </el-option-group>
-                </el-select>
-            </el-col>
-            <el-col class="hidden-sm-and-down"  :md="10" :lg="8">
-              <el-input
-                placeholder="请输入关键字搜索"
-                v-model="filterSearch.keywords">
-                <el-button slot="append" icon="el-icon-search"  @click="search"></el-button>
-              </el-input>
-            </el-col>
-          </el-row>
         </el-col>
       </el-row>
       <div class="list-box">
@@ -78,14 +32,8 @@
           width="55">
         </el-table-column>
         <el-table-column
-          label="ID"
-          width="55">
-          <template slot-scope="scope">{{ scope.row.id}}</template>
-        </el-table-column>
-        <el-table-column
-          prop="title"
-          label="文章标题"
-           width="300"
+          prop="content"
+          label="时间轴内容"
           show-overflow-tooltip
           >
         </el-table-column>
@@ -99,55 +47,11 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="所属分类"
-          width="100"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <p v-for="(item, index) in scope.row.category" :key="index">
-              {{ item| catefilter}}
-            </p>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="标签"
-          >
-          <template slot-scope="scope">
-            <el-tag v-for="(item, index) in scope.row.tag" :key="index">{{item[0].name}}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="comment_num"
-          label="评论"
-          width="80"
-          show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
-          prop="like"
-          label="喜欢"
-          width="80"
-          show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
-          prop="view"
-          label="浏览量"
-          width="80"
-          show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
           label="日期"
           width="150"
           show-overflow-tooltip>
           <template slot-scope="scope">
             {{scope.row.creat_time | formatTime}}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="公开"
-          width="80"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.open">{{scope.row.open | openfilter}}</el-tag>
-            <el-tag type="danger" v-else >{{scope.row.open | openfilter}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -226,7 +130,7 @@
   </el-dialog>
 
   <el-dialog
-    title="编辑文章"
+    title="编辑时间轴"
     :visible.sync="editdialogVisible"
     width="80%">
     <v-edit :edit="true" :editArr="editArr" :editId="editId" @changeEditdialogVisible="changeEditdialogVisible"></v-edit>
@@ -236,7 +140,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import ArticleApi from '@/api/article'
+import TimeApi from '@/api/time'
 import VEdit from './insert.vue'
 import { catefilter, formatTime, openfilter, statusfilter } from '@/filters'
 export default {
@@ -318,27 +222,20 @@ export default {
       this.filterobj.condition2 = ''
       this.filterobj.condition3 = ''
     },
-    getTagList () {
-      ArticleApi.getTaglist().then((res) => {
-        if (res.data.code === 0) {
-          this.tag = res.data.tagList
-        }
-      })
-    },
     handleSizeChange (val) {
       this.listQuery.limit = val
-      this.initArticleList()
+      this.initTimeLineList()
     },
     handleCurrentChange (val) {
       this.listQuery.page = val
-      this.initArticleList()
+      this.initTimeLineList()
     },
     handleEdit (id) {
       this.editdialogVisible = true
       this.editId = id
-      ArticleApi.getOneArticle({_id: id}).then((res) => {
+      TimeApi.getOneTime({_id: id}).then((res) => {
         if (res.data.code === 0) {
-          this.editArr = res.data.articleobj
+          this.editArr = res.data.timeObj
         }
       })
     },
@@ -348,9 +245,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.fakeDelArticle({_id: id}).then((res) => {
+        TimeApi.fakeDelTime({_id: id}).then((res) => {
           if (res.data.code === 0) {
-            this.initArticleList()
+            this.initTimeLineList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -372,9 +269,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.recoveryDelArticle({_id: id}).then((res) => {
+        TimeApi.recoveryDelTime({_id: id}).then((res) => {
           if (res.data.code === 0) {
-            this.initArticleList()
+            this.initTimeLineList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -397,9 +294,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.delArticle({_id: id}).then((res) => {
+        TimeApi.delTime({_id: id}).then((res) => {
           if (res.data.code === 0) {
-            this.initArticleList()
+            this.initTimeLineList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -417,7 +314,7 @@ export default {
     },
     changeEditdialogVisible () {
       this.editdialogVisible = false
-      this.initArticleList()
+      this.initTimeLineList()
     },
     handleSelectionChange (val) {
       this.multipleSelection = val
@@ -426,19 +323,10 @@ export default {
       this.imgdialogVisible = true
       this.thumb_img = url
     },
-    initArticleList () {
-      ArticleApi.articleList(this.listQuery, this.filterobj).then((res) => {
+    initTimeLineList () {
+      TimeApi.timeList(this.listQuery, this.filterobj).then((res) => {
         if (res.data.code === 0) {
-          this.tableData = res.data.articleList
-          this.total = res.data.total
-          this.loading = false
-        }
-      })
-    },
-    search () {
-      ArticleApi.articleList(this.listQuery, this.filterSearch).then((res) => {
-        if (res.data.code === 0) {
-          this.tableData = res.data.articleList
+          this.tableData = res.data.timeLineList
           this.total = res.data.total
           this.loading = false
         }
@@ -448,7 +336,7 @@ export default {
   watch: {
     filterobj: {
       handler () {
-        this.initArticleList()
+        this.initTimeLineList()
       },
       deep: true
     },
@@ -469,8 +357,7 @@ export default {
     }
   },
   mounted () {
-    this.getTagList()
-    this.initArticleList()
+    this.initTimeLineList()
   }
 }
 </script>

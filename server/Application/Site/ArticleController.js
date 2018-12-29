@@ -10,13 +10,49 @@ class Article extends Base {
   }
 
   async getArticleList (req, res, next) {
-    let currentpage = parseInt(req.query.page)
-    let limit = parseInt(req.query.limit)
+    let currentpage = parseInt(req.body.page)
+    let limit = parseInt(req.body.limit)
     let row = (currentpage - 1) * limit
-    let result = await articleModel.find(req.body).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    let cate = req.body.cate ? req.body.cate : null
+    let tag = req.body.tag ? req.body.tag : null
+    let time = req.body.creat_time ? req.body.creat_time : null
+    let hot = req.body.hot ? req.body.hot : false
+    let keyWord = req.body.keyWord ? req.body.keyWord : null
+    let reg = new RegExp(keyWord, 'i') // 模糊查询参数
+    let result = []
+    if (cate) {
+      result = await articleModel.find({ recovery: false, status: true, category: cate }).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    }
+    if (tag) {
+      result = await articleModel.find({ recovery: false, status: true, tag: tag }).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    }
+
+    if (time) {
+      let timeStart = parseInt(time)
+      let timeEnd = parseInt(time) + 86400000
+      result = await articleModel.find({ recovery: false, status: true, creat_time: { '$gte': timeStart, '$lte': timeEnd } }).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    }
+
+    if (hot) {
+      result = await articleModel.find({ recovery: false, status: true }).skip(row).limit(limit).sort({ like: -1 }).lean()
+    }
+
+    if (keyWord) {
+      result = await articleModel.find({ recovery: false, status: true, '$or': [{ 'title': reg }, { 'des': reg }, { 'content': reg }] }).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    }
+
+    if (!cate && !tag && !time && !hot && !keyWord) {
+      result = await articleModel.find({ recovery: false, status: true }).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
+    }
     for (let i = 0; i < result.length; i++) {
       let aid = result[i].id
-      let num = await commentModel.find({ aid: aid, pid: 0 }).lean()
+      let arr = []
+      let num = await commentModel.find({ aid: aid }).lean()
+      for (let j = 0; j < result[i].tag.length; j++) {
+        let resTag = await tagModel.findOne({ alias: result[i].tag[j] }).lean()
+        arr.push(resTag)
+      }
+      result[i].tag = arr
       result[i].comment_num = num.length
     }
     if (result) {
@@ -44,11 +80,19 @@ class Article extends Base {
 
   async getArticleDetails (req, res, next) {
     let id = req.body.id
-    let result = await articleModel.find({id: id}).lean()
+    let result = await articleModel.findOne({id: id}).lean()
     if (result.length !== 0) {
-      let view = parseInt(result[0].view) + 1
+      let view = parseInt(result.view) + 1
       let result2 = await articleModel.findOneAndUpdate({id: id}, {view: view})
       if (result2) {
+        let num = await commentModel.find({ aid: id }).lean()
+        let arr = []
+        for (let i = 0; i < result.tag.length; i++) {
+          let resTag = await tagModel.findOne({ alias: result.tag[i] }).lean()
+          arr.push(resTag.name)
+        }
+        result.comment_num = num.length
+        result.tag = arr
         res.send({
           code: 0,
           articleDetails: result,

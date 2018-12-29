@@ -8,6 +8,7 @@ const comment = new Schema({
   email: String,
   content: String,
   aid: String,
+  recovery: { type: Boolean, default: false },
   like: { type: String, default: 0 },
   pid: { type: String, default: 0 },
   creat_time: { type: String, default: Date.now }

@@ -54,6 +54,22 @@ export default {
               meta: {title: '所有评论', hidden: false}
             }
           ]
+        },
+        {
+          path: '/timeline',
+          meta: {icon: 'time', title: '时间轴管理', hidden: false},
+          children: [
+            {
+              path: 'index',
+              name: 'timelineindex',
+              meta: {title: '时间轴列表', hidden: false}
+            },
+            {
+              path: 'insert',
+              name: 'timelineinsert',
+              meta: {title: '时间轴续写', hidden: false}
+            }
+          ]
         }
       ]}
   },

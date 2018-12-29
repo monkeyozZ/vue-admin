@@ -10,41 +10,8 @@
         <el-col :xs="{span: 16}" :sm="{span: 14}" :md="{span: 10}" :lg="{span: 8}">
           <el-radio-group v-model="filterobj.condition">
           <el-radio-button label="1">全部</el-radio-button>
-          <el-radio-button label="2">已发布</el-radio-button>
-          <el-radio-button label="3">待审核</el-radio-button>
-          <el-radio-button label="4">垃圾评论</el-radio-button>
+          <el-radio-button label="2">垃圾评论</el-radio-button>
         </el-radio-group>
-        </el-col>
-        <el-col :xs="8" :sm="10" :md="{span:6}" :lg="{span:9, offset: 7}">
-          <el-row class="cate-filter-box" :gutter="10">
-            <el-col class="hidden-sm-and-down" :md="4" :lg="5">
-              <el-button icon="el-icon-delete" @click="clear">清空筛选条件</el-button>
-            </el-col>
-            <el-col class="hidden-md-and-down"  :md="6" :lg="6">
-              <el-select v-model="filterobj.condition2"
-                filterable
-                placeholder="评论排序">
-                  <el-option-group
-                    v-for="group in category"
-                    :key="group.label"
-                    :label="group.label">
-                    <el-option
-                      v-for="item in group.options"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                    </el-option>
-                  </el-option-group>
-                </el-select>
-            </el-col>
-            <el-col class="hidden-sm-and-down"  :md="8" :lg="8">
-              <el-input
-                placeholder="请输入关键字搜索"
-                v-model="filterSearch.keywords">
-                <el-button slot="append" icon="el-icon-search"  @click="search"></el-button>
-              </el-input>
-            </el-col>
-          </el-row>
         </el-col>
       </el-row>
       <div class="list-box">
@@ -68,26 +35,56 @@
           <template slot-scope="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
         <el-table-column
-          prop="title"
-          label="评论内容"
+          label="文章标题"
+          width="200"
           show-overflow-tooltip
           >
-        </el-table-column>
-        <el-table-column
-          label="个人信息"
-          width="200"
-          show-overflow-tooltip>
           <template slot-scope="scope">
-            <p v-for="(item, index) in scope.row.category" :key="index">
-              {{ item| catefilter}}
-            </p>
+            {{scope.row.article.title ? scope.row.article.title : ''}}
           </template>
         </el-table-column>
         <el-table-column
+          prop="content"
+          label="评论内容"
+          show-overflow-tooltip
+          >
+          <template slot-scope="scope">
+            <div v-html="markedhtml(scope.row.content)"></div>
+          </template>
+        </el-table-column>
+        <el-table-column
+        prop="name"
+          label="昵称"
+          width="100"
+          show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column
+          prop="email"
+          label="个人邮箱"
+          width="100"
+          show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column
           prop="like"
-          label="喜欢"
+          label="获赞"
           width="80"
           show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column
+          prop="status"
+          label="子评论数/详情"
+          width="120"
+          show-overflow-tooltip>
+          <template slot-scope="scope">
+            ({{scope.row.reply_comment.length}})/
+            <el-button
+                size="mini"
+                type="primary"
+                icon="el-icon-view"
+                circle
+                v-waves
+                @click="handleShowChildren(scope.row.reply_comment)"></el-button>
+          </template>
         </el-table-column>
         <el-table-column
           label="日期"
@@ -95,16 +92,6 @@
           show-overflow-tooltip>
           <template slot-scope="scope">
             {{scope.row.creat_time | formatTime}}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="status"
-          label="状态"
-          width="80"
-          show-overflow-tooltip>
-          <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.status">{{scope.row.status | statusfilter}}</el-tag>
-            <el-tag type="info" v-else >{{scope.row.status | statusfilter}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -126,7 +113,7 @@
                 type="primary"
                 icon="el-icon-edit"
                 circle
-                v-else
+                v-else-if="filterobj.condition === '2'"
                 v-waves
                 @click="handleEdit(scope.row._id)"></el-button>
 
@@ -142,10 +129,10 @@
                 <el-button
                 size="mini"
                 v-waves
+                v-else
                 type="danger"
                 icon="el-icon-delete"
                 circle
-                v-else
                 @click="handleDelete(scope.row._id)"></el-button>
             </template>
         </el-table-column>
@@ -171,49 +158,149 @@
     center>
     <img :src="baseapi + thumb_img" alt="" style="display:block;margin: 0 auto;max-width:100%">
   </el-dialog>
+  <el-dialog
+    title="子评论"
+    :visible.sync="childrenDialogVisible"
+    width="80%">
+      <el-table
+      ref="multipleTable"
+      border
+      stripe
+      :data="childrenCommentData"
+      v-loading="loading"
+      tooltip-effect="dark"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+      >
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
+      <el-table-column
+        label="ID"
+        width="55">
+        <template slot-scope="scope">{{ scope.$index + 1 }}</template>
+      </el-table-column>
+      <el-table-column
+        label="文章标题"
+        width="200"
+        show-overflow-tooltip
+        >
+        <template slot-scope="scope">
+          {{scope.row.article.title ? scope.row.article.title : ''}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="content"
+        label="评论内容"
+        show-overflow-tooltip
+        >
+        <template slot-scope="scope">
+          <span v-if="scope.row.replay_name">回复<b style="margin:0 4px">{{scope.row.replay_name}}</b>:</span>
+          <div v-html="markedhtml(scope.row.content)"></div>
+        </template>
+      </el-table-column>
+      <el-table-column
+      prop="name"
+        label="昵称"
+        width="100"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        prop="email"
+        label="个人邮箱"
+        width="100"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        prop="like"
+        label="获赞"
+        width="80"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        label="日期"
+        width="150"
+        show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{scope.row.creat_time | formatTime}}
+        </template>
+      </el-table-column>
+      <!-- <el-table-column
+        label="操作"
+        width="150"
+        show-overflow-tooltip>
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary"
+              icon="el-icon-back"
+              circle
+              v-if="scope.row.recovery"
+              v-waves
+              @click="recoveryDelete(scope.row._id)"></el-button>
+
+            <el-button
+              size="mini"
+              type="primary"
+              icon="el-icon-edit"
+              circle
+              v-else
+              v-waves
+              @click="handleEdit(scope.row._id)"></el-button>
+
+              <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              v-waves
+              v-if="!scope.row.recovery"
+              @click="fakeDelete(scope.row._id)"></el-button>
+
+              <el-button
+              size="mini"
+              v-waves
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              v-else
+              @click="handleDelete(scope.row._id)"></el-button>
+          </template>
+      </el-table-column> -->
+    </el-table>
+  </el-dialog>
 </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
-import ArticleApi from '@/api/article'
-import { catefilter, formatTime, openfilter, statusfilter } from '@/filters'
+import CommentApi from '@/api/comment'
+import marked from '@/utils/marked'
+import { formatTime } from '@/filters'
 export default {
   directives: {
     waves
   },
   filters: {
-    catefilter,
-    formatTime,
-    openfilter,
-    statusfilter
+    formatTime
   },
   data () {
     return {
       baseapi: process.env.BASE_API,
       imgdialogVisible: false,
-      editdialogVisible: false,
+      childrenDialogVisible: false,
       thumb_img: '',
       loading: true,
       filterobj: {
-        condition: '1',
-        condition2: '',
-        condition3: ''
+        condition: '1'
       },
-      filterSearch: {
-        condition: '1',
-        condition2: '',
-        condition3: '',
-        keywords: ''
-      },
-      count: `(${this.total})`,
       listQuery: {
         page: 1,
         limit: 8
       },
       tableData: [],
-      editArr: {},
-      editId: '',
+      childrenCommentData: [],
       total: '',
       category: [
         {
@@ -229,7 +316,6 @@ export default {
           ]
         }
       ],
-      tag: [],
       multipleSelection: []
     }
   },
@@ -245,44 +331,32 @@ export default {
     }
   },
   methods: {
+  // marked 解析
+    markedhtml (content) {
+      return marked(content, false)
+    },
     clear () {
       this.filterobj.condition = '1'
       this.filterobj.condition2 = ''
       this.filterobj.condition3 = ''
     },
-    getTagList () {
-      ArticleApi.getTaglist().then((res) => {
-        if (res.data.code === 0) {
-          this.tag = res.data.tagList
-        }
-      })
-    },
     handleSizeChange (val) {
       this.listQuery.limit = val
-      this.initArticleList()
+      this.initCommentList()
     },
     handleCurrentChange (val) {
       this.listQuery.page = val
-      this.initArticleList()
-    },
-    handleEdit (id) {
-      this.editdialogVisible = true
-      this.editId = id
-      ArticleApi.getOneArticle({_id: id}).then((res) => {
-        if (res.data.code === 0) {
-          this.editArr = res.data.articleobj
-        }
-      })
+      this.initCommentList()
     },
     fakeDelete (id) {
-      this.$confirm('确定将该记录添加到回收站吗？', '温馨提示', {
+      this.$confirm('确定将该记录移入垃圾评论吗？', '温馨提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.fakeDelArticle({_id: id}).then((res) => {
+        CommentApi.fakeDelComment({_id: id}).then((res) => {
           if (res.data.code === 0) {
-            this.initArticleList()
+            this.initCommentList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -304,9 +378,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.recoveryDelArticle({_id: id}).then((res) => {
+        CommentApi.recoveryComment({_id: id}).then((res) => {
           if (res.data.code === 0) {
-            this.initArticleList()
+            this.initCommentList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -329,9 +403,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        ArticleApi.delArticle({_id: id}).then((res) => {
-          if (res.data.code === 0) {
-            this.initArticleList()
+        CommentApi.delComment({_id: id}).then((res) => {
+          /* if (res.data.code === 0) {
+            this.initCommentList()
             this.$notify({
               type: 'success',
               title: '成功',
@@ -343,34 +417,58 @@ export default {
               title: '失败',
               message: res.data.message
             })
-          }
+          } */
         })
       })
-    },
-    changeEditdialogVisible () {
-      this.editdialogVisible = false
-      this.initArticleList()
     },
     handleSelectionChange (val) {
       this.multipleSelection = val
     },
-    jioinImgUrl (url) {
-      this.imgdialogVisible = true
-      this.thumb_img = url
-    },
-    initArticleList () {
-      ArticleApi.articleList(this.listQuery, this.filterobj).then((res) => {
-        if (res.data.code === 0) {
-          this.tableData = res.data.articleList
-          this.total = res.data.total
-          this.loading = false
+    compare (prop) {
+      return (obj1, obj2) => {
+        let val1 = obj1[prop]
+        let val2 = obj2[prop]
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+          val1 = Number(val1)
+          val2 = Number(val2)
         }
-      })
+        if (val1 < val2) {
+          return 1
+        } else if (val1 > val2) {
+          return -1
+        } else {
+          return 0
+        }
+      }
     },
-    search () {
-      ArticleApi.articleList(this.listQuery, this.filterSearch).then((res) => {
+    list (arr) {
+      let childarr = arr.concat()
+      for (let i = 0; i < childarr.length; i++) {
+        if (childarr[i].reply_comment.length !== 0) {
+          for (let j = 0; j < childarr[i].reply_comment.length; j++) {
+            if (childarr[i].id === parseInt(childarr[i].reply_comment[j].pid)) {
+              childarr[i].reply_comment[j].replay_name = childarr[i].name
+            }
+            childarr.push(childarr[i].reply_comment[j])
+          }
+        }
+      }
+      childarr.sort(this.compare('creat_time')) // 数组排序
+      return childarr
+    },
+    handleShowChildren (arr) {
+      if (arr.length !== 0) {
+        this.childrenCommentData = this.list(arr)
+        this.childrenDialogVisible = true
+      }
+    },
+    initCommentList () {
+      let obj = {
+        condition: this.filterobj.condition
+      }
+      CommentApi.commentList(this.listQuery, obj).then((res) => {
         if (res.data.code === 0) {
-          this.tableData = res.data.articleList
+          this.tableData = res.data.commentList
           this.total = res.data.total
           this.loading = false
         }
@@ -378,31 +476,15 @@ export default {
     }
   },
   watch: {
-    filterobj: {
+    'filterobj.condition': {
       handler () {
-        this.initArticleList()
+        this.initCommentList()
       },
       deep: true
-    },
-    condition: {
-      handler () {
-        this.filterSearch.condition = this.condition
-      }
-    },
-    condition2: {
-      handler () {
-        this.filterSearch.condition2 = this.condition2
-      }
-    },
-    condition3: {
-      handler () {
-        this.filterSearch.condition2 = this.condition3
-      }
     }
   },
   mounted () {
-    this.getTagList()
-    this.initArticleList()
+    this.initCommentList()
   }
 }
 </script>

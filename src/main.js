@@ -8,6 +8,7 @@ import ElementUI from 'element-ui'
 import './assets/css/reset.css'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'element-ui/lib/theme-chalk/display.css'
+import 'highlight.js/styles/dracula.css'
 import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 import './icons' // icon

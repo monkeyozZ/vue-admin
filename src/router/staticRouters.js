@@ -60,6 +60,25 @@ const staticRoutes = [
     ]
   },
   {
+    path: '/timeline',
+    component: main,
+    meta: { icon: 'time', title: '时间轴', hidden: false },
+    children: [
+      {
+        path: 'index',
+        name: 'timelineindex',
+        component: LoadComponent('time/index'),
+        meta: { title: '时间轴列表', hidden: false }
+      },
+      {
+        path: 'insert',
+        name: 'timelineinsert',
+        component: LoadComponent('time/insert'),
+        meta: { title: '时间轴续写', hidden: false }
+      }
+    ]
+  },
+  {
     path: '*',
     redirect: '/401'
   },

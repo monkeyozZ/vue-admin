@@ -6,7 +6,7 @@
       <el-breadcrumb-item :to="{ path: '/article/insert' }">添加文章</el-breadcrumb-item>
     </el-breadcrumb>
     <el-row>
-      <el-col :lg="17" :md="17" :sm="24" :xs="24" class="form-left">
+      <el-col :lg="17" :md="17" :sm="24" :xs="24" class="form-left" :class="{resetBg: edit}">
         <el-form :rules="rules" ref="dataForm1" :model="Form" label-position="left" label-width="120px">
           <el-form-item label="文章标题：" prop="title" :inline-message="true">
               <el-input v-model="Form.title" placeholder="文章标题" style="width:50%"></el-input>
@@ -42,7 +42,7 @@
           </el-form-item>
         </el-form>
       </el-col>
-      <el-col :lg="5" :md="5" :sm="24" :xs="24" class="form-right">
+      <el-col :lg="5" :md="5" :sm="24" :xs="24" class="form-right" :class="{resetBg: edit}">
         <el-form :rules="rules" ref="dataForm2" :model="Form" label-position="top" label-width="85px">
           <el-form-item label="文章来源：" prop="origin">
               <el-select v-model="Form.origin" placeholder="请选择">
@@ -54,26 +54,27 @@
                 </el-option>
               </el-select>
           </el-form-item>
-          <el-form-item label="文章状态：" prop="origin">
+          <el-form-item label="文章状态：" prop="status">
             <el-switch
               v-model="Form.status"
               active-text="直接发布"
               inactive-text="存为草稿">
             </el-switch>
           </el-form-item>
-          <el-form-item label="是否公开：" prop="origin">
+          <el-form-item label="是否公开：" prop="open">
             <el-switch
               v-model="Form.open"
               active-text="公开"
               inactive-text="私密">
             </el-switch>
           </el-form-item>
-           <el-form-item label="缩略图：" prop="thumb_img">
+           <el-form-item label="缩略图：" prop="thumb_img" class="thumb_box">
               <el-upload
                 class="thumb-uploader"
                 :action="baseapi + '/article/thumbSave'"
                 :data="Form"
                 :show-file-list="false"
+                accept="image/*"
                 :on-success="handleThumbSuccess"
                 :before-upload="beforeThumbUpload">
                 <div v-if="Form.imageUrl" class="el-upload-list--picture-card">
@@ -244,16 +245,11 @@ export default {
       }
     },
     beforeThumbUpload (file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        this.$message.error('上传头像图片大小不能超过 10MB!')
       }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return isJPG && isLt2M
+      return isLt10M
     },
     editArticle () {
       this.$refs.dataForm1.validate((valid) => {
@@ -335,6 +331,9 @@ export default {
     box-sizing border-box
     margin 0 15px
     background-color #fff
+    &.resetBg
+      border 1px solid #ddd
+      border-radius 5px
     .el-form-item
       margin-bottom 10px
     .tag-box
@@ -356,6 +355,9 @@ export default {
     box-sizing border-box
     margin 0 10px
     background-color #fff
+    &.resetBg
+      border 1px solid #ddd
+      border-radius 5px
     .thumb-uploader
       .el-upload-list__item-status-label
         display block
@@ -366,8 +368,7 @@ export default {
       .thumb-uploader-icon
         font-size 28px
         color #8c939d
-        width 210px
-        height 150px
+        width 100%
         line-height 150px
         text-align center
       .thumb
