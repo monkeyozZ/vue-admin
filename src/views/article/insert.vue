@@ -372,7 +372,7 @@ export default {
         line-height 150px
         text-align center
       .thumb
-        width 210px
+        width 100%
         height 150px
         display block
     .submit

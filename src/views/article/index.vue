@@ -47,7 +47,8 @@
                       v-for="(item, index) in tag"
                       :key="index"
                       :label="item.name"
-                      :value="item.alias">
+                      :value="item.alias"
+                      >
                     </el-option>
                   </el-option-group>
                 </el-select>

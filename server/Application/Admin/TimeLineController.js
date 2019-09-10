@@ -4,7 +4,6 @@ import path from 'path'
 import fs from 'fs'
 import formidable from 'formidable'
 import timeModel from '../../models/admin/time'
-import tagModel from '../../models/admin/tag'
 
 class TimeLine extends Base {
   constructor () {
@@ -245,63 +244,6 @@ class TimeLine extends Base {
       res.send({
         code: 0,
         message: 'ok'
-      })
-    }
-  }
-
-  async tagInsert (req, res, next) {
-    try {
-      let result = await tagModel.create(req.body)
-      if (result) {
-        res.send({
-          code: 0,
-          message: 'ok'
-        })
-      }
-    } catch (error) {
-      if (error.code === 11000) {
-        res.send({
-          code: -1,
-          message: '名称或别名已存在'
-        })
-      }
-    }
-  }
-
-  async getOneTag (req, res, next) {
-    let result = await tagModel.findById(req.query._id)
-    if (result) {
-      res.send({
-        code: 0,
-        tagobj: result,
-        message: 'ok'
-      })
-    }
-  }
-
-  async editOneTag (req, res, next) {
-    let result = await tagModel.findByIdAndUpdate(req.params.id, req.body)
-    if (result) {
-      res.send({
-        code: 0,
-        message: '标签修改成功'
-      })
-    }
-  }
-
-  async delTag (req, res, next) {
-    let id = req.query._id
-    const result = await tagModel.remove({ _id: id })
-    // console.log(result)
-    if (parseInt(result.n) === 1) {
-      res.send({
-        code: 0,
-        message: '删除成功'
-      })
-    } else {
-      res.send({
-        code: -1,
-        message: '删除失败'
       })
     }
   }

@@ -30,7 +30,7 @@ app.use(session({
 }))
 
 app.all('*', function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'http://192.168.2.133:9999')
+  res.header('Access-Control-Allow-Origin', 'http://192.168.2.133:8888')
   res.header('Access-Control-Allow-Credentials', true)
   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild')
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')

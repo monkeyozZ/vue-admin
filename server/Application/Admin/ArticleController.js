@@ -5,6 +5,7 @@ import fs from 'fs'
 import formidable from 'formidable'
 import articleModel from '../../models/admin/article'
 import tagModel from '../../models/admin/tag'
+import commentModel from '../../models/site/comment'
 
 class Article extends Base {
   constructor () {
@@ -78,11 +79,13 @@ class Article extends Base {
     let row = (currentpage - 1) * limit
     let result = await articleModel.find(all).skip(row).limit(limit).sort({ creat_time: -1 }).lean()
     for (let i = 0; i < result.length; i++) {
+      let commentNum = await commentModel.find({ aid: result[i].id })
       for (let j = 0; j < result[i].tag.length; j++) {
         let tag = await tagModel.find({ alias: result[i].tag[j] })
         // console.log(result[i].tag[j])
         result[i].tag[j] = tag
       }
+      result[i].comment_num = commentNum.length
     }
     let count = await articleModel.countDocuments(all)
     if (result) {

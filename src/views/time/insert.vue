@@ -133,7 +133,7 @@ export default {
               })
               /* this.$refs.dataForm1.resetFields() // 重置表单
               this.Form.imageUrl = '' */
-              this.$router.push('/article/index')
+              this.$router.push('/timeline/index')
             }
           }).catch((err) => {
             this.$notify({

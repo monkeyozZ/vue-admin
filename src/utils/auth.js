@@ -22,7 +22,7 @@ const authToken = {
   // 设置userid
   setUserId: function (token) {
     // 设置token，并填写有效期
-    var maxAge = new Date(new Date().getTime() + 30 * 60 * 1000)
+    var maxAge = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)
     Cookies.set('UserId', token, {
       expires: maxAge
     })
