@@ -21,7 +21,7 @@
     "http-errors": "~1.6.2",
     "marked": "^0.5.1",
     "md5": "^2.2.1",
-    "mongoose": "^5.2.13",
+    "mongoose": "^5.7.5",
     "mongoose-auto-increment": "^5.0.1",
     "mongoose-long": "^0.2.1",
     "morgan": "~1.9.0",
